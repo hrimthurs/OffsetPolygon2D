@@ -1,0 +1,24 @@
+{
+  "name": "@hrimthurs/offsetpolygon2d",
+  "version": "1.0.0",
+  "description": "",
+  "author": "@hrimthurs",
+  "license": "MIT",
+  "repository": "hrimthurs/OffsetPolygon2D",
+  "type": "module",
+  "module": "./src/OffsetPolygon2D.js",
+  "main": "./src/OffsetPolygon2D.js",
+  "scripts": {
+    "live:example": "start /min webpack serve",
+    "version": "npm view @hrimthurs/offsetpolygon2d version",
+    "pub": "npm publish --access public"
+  },
+  "dependencies": {
+    "@hrimthurs/tackle": "^1.24.0",
+    "gpc.js": "^1.0.1"
+  },
+  "devDependencies": {
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  }
+}
