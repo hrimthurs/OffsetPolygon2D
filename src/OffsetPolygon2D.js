@@ -1,7 +1,7 @@
 import { TkMath } from '@hrimthurs/tackle'
 import { Polygon } from 'gpc.js'
 
-export class PolygonOffset {
+export class OffsetPolygon {
 
     #verts = null
     #edges = []
