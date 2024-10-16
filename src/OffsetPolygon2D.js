@@ -71,7 +71,7 @@ export class OffsetPolygon2D {
 
         return this.#distance === 0
             ? this.#closedVerts
-            : this.#orientRings(this.#offsetContour(this.#distance, true))
+            : this.#orientRings(this.#offsetContour(-this.#distance, true))
     }
 
     get #closedVerts() {
@@ -98,17 +98,23 @@ export class OffsetPolygon2D {
     }
 
     #offsetContour(distance, innerSide) {
-        let subPolygons = []
-
         if (this.#verts) {
 
+            let polygon = this.#makePolygon(this.#verts[0], this.#verts[1], this.#edges[0], distance)
+
             for (let i = 1; i < this.#verts.length - 1; i++) {
-                const polygon = this.#makePolygon(this.#verts[i], this.#verts[i + 1], this.#edges[i], distance)
-                subPolygons.push(polygon)
+                const ptA = this.#verts[i]
+                const ptB = this.#verts[i + 1]
+                const edge = this.#edges[i]
+
+                try {
+                    polygon = polygon.union(this.#makePolygon(ptA, ptB, edge, distance))
+                } catch {
+                    polygon = polygon.union(this.#makePolygon(this.#shiftPoint(ptA), this.#shiftPoint(ptB), edge, distance))
+                }
             }
 
-            const mainPolygon = this.#makePolygon(this.#verts[0], this.#verts[1], this.#edges[0], distance)
-            const { bounds, holes } = mainPolygon.union(...subPolygons).toVertices()
+            const { bounds, holes } = polygon.toVertices()
 
             const contours = innerSide === null
                 ? [...bounds, ...holes]
@@ -133,26 +139,20 @@ export class OffsetPolygon2D {
     }
 
     #generateArc(center, ptStart, ptEnd, distance, points) {
-        let angleStart = Math.atan2(ptStart.y - center.y, ptStart.x - center.x)
-        if (angleStart < 0) angleStart += TkMath.DOUBLE_PI
+        points.push(ptStart)
 
-        let angleEnd = Math.atan2(ptEnd.y - center.y, ptEnd.x - center.x)
-        if (angleEnd < 0) angleEnd += TkMath.DOUBLE_PI
+        const angleStart = this.#positiveAngle(Math.atan2(ptStart.y - center.y, ptStart.x - center.x))
+        const angleEnd = this.#positiveAngle(Math.atan2(ptEnd.y - center.y, ptEnd.x - center.x))
+        const angleBetween = this.#positiveAngle(angleStart - angleEnd)
 
-        const angleBetween = angleStart > angleEnd
-            ? angleStart - angleEnd
-            : angleStart + TkMath.DOUBLE_PI - angleEnd
-
-        const segments = this.#arcSegments % 2 !== 0
+        let segments = this.#arcSegments % 2 !== 0
             ? this.#arcSegments - 1
             : this.#arcSegments
 
         const angleSegment = -angleBetween / segments
 
-        points.push(ptStart)
-
-        for (let i = 1; i < segments; ++i) {
-            const angle = angleStart + angleSegment * i
+        for (let i = segments - 1; i > 0; i--) {
+            const angle = angleStart + (angleSegment * i)
 
             points.push({
                 x: center.x + Math.cos(angle) * distance,
@@ -163,11 +163,22 @@ export class OffsetPolygon2D {
         points.push(ptEnd)
     }
 
+    #positiveAngle(angle) {
+        return angle < 0 ? angle + TkMath.DOUBLE_PI : angle
+    }
+
     #closePolygon(vertices) {
         const isOpen = !TkMath.isEqualCoords2D(vertices[0], vertices[vertices.length - 1])
         if (isOpen) vertices.push(vertices[0])
 
         return vertices
+    }
+
+    #shiftPoint(pt) {
+        pt.x += (Math.random() - 0.5) / 100,
+        pt.y += (Math.random() - 0.5) / 100
+
+        return pt
     }
 
 }
