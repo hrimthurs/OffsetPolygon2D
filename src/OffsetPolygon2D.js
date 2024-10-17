@@ -71,7 +71,7 @@ export class OffsetPolygon2D {
 
         return this.#distance === 0
             ? this.#closedVerts
-            : this.#orientRings(this.#offsetContour(-this.#distance, true))
+            : this.#orientRings(this.#offsetContour(this.#distance, true))
     }
 
     get #closedVerts() {
