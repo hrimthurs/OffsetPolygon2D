@@ -31,7 +31,7 @@ export class OffsetPolygon2D {
     }
 
     distance(dist) {
-        if (dist !== undefined) this.#distance = dist
+        if (dist !== undefined) this.#distance = Math.abs(dist)
         return this
       }
 
@@ -45,7 +45,7 @@ export class OffsetPolygon2D {
 
         return this.#distance === 0
             ? this.#closedVerts
-            : this.#orientRings(this.#offsetContour(Math.abs(this.#distance), null))
+            : this.#orientRings(this.#offsetContour(this.#distance, null))
     }
 
     offset(dist) {
@@ -53,9 +53,9 @@ export class OffsetPolygon2D {
 
         return this.#distance === 0
             ? this.#closedVerts
-            : this.#distance > 0
+            : dist > 0
                 ? this.margin(this.#distance)
-                : this.padding(-this.#distance)
+                : this.padding(this.#distance)
     }
 
     margin(dist) {
@@ -71,7 +71,7 @@ export class OffsetPolygon2D {
 
         return this.#distance === 0
             ? this.#closedVerts
-            : this.#orientRings(this.#offsetContour(this.#distance, true))
+            : this.#orientRings(this.#offsetContour(-this.#distance, true))
     }
 
     get #closedVerts() {
